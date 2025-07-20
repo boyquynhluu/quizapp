@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.myapp.quiz.dto.DiemResponse;
 import com.myapp.quiz.entity.Diem;
+import com.myapp.quiz.entity.User;
 import com.myapp.quiz.repository.DiemRepository;
+import com.myapp.quiz.repository.UserRepository;
 import com.myapp.quiz.service.DiemService;
 
 import jakarta.persistence.EntityManager;
@@ -56,6 +58,7 @@ public class DiemServiceImpl implements DiemService {
             """;
 
     private final DiemRepository diemRepository;
+    private final UserRepository userRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -83,9 +86,15 @@ public class DiemServiceImpl implements DiemService {
 
     @Override
     public void deleteAll() {
-        List<Diem> diems = diemRepository.findAll();
-        for(Diem diem : diems) {
-            diemRepository.delete(diem);
+        try {
+            List<User> users = userRepository.findAll();
+            for(User user : users) {
+                user.getDiems().clear();
+                userRepository.save(user);
+            }
+        } catch (Exception e) {
+            log.info("Error when delete diem: {}", e.getMessage(), e);
+            throw e;
         }
     }
 
