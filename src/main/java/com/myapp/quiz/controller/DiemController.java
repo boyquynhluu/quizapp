@@ -24,7 +24,7 @@ public class DiemController {
     private final DiemService diemService;
 
     @GetMapping
-    public ResponseEntity<?> getDiems() {
+    public ResponseEntity<List<DiemResponse>> getDiems() {
         log.info("START GET DIEM CONTROLLER");
 
         List<DiemResponse> diems = diemService.getDiems();

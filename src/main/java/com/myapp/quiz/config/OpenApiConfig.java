@@ -12,6 +12,7 @@ import com.myapp.quiz.constants.Constants;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 
@@ -20,6 +21,7 @@ public class OpenApiConfig {
 
     private static final String QUIZ_APP = "QuizApp";
     private static final String PATH_TO_MATCH = "/**";
+    final String SECURITY_SCHEMENAME = "bearerAuth";
 
     @Bean
     public OpenAPI openAPI(@Value(Constants.API_TITLE) String title,
@@ -27,15 +29,24 @@ public class OpenApiConfig {
                            @Value(Constants.API_DESCRIPTION) String description,
                            @Value(Constants.API_SERVER_URL) String serverUrl,
                            @Value(Constants.API_SERVER_NAME) String serverName) {
-        return new OpenAPI().info(new Info()
+
+        return new OpenAPI()
+                 .info(new Info()
                             .title(title)
                             .version(version)
                             .description(description))
-                            .servers(List.of(new Server()
+                 .servers(List.of(new Server()
                             .url(serverUrl)
                             .description(serverName)))
-                            .components(new Components()
-                                    .addSecuritySchemes(Constants.API_AUTHORIZATION, new SecurityScheme()));
+                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEMENAME))
+                 .components(new Components()
+                            .addSecuritySchemes(SECURITY_SCHEMENAME,
+                                    new SecurityScheme()
+                                    .name(SECURITY_SCHEMENAME)
+                                    .type(SecurityScheme.Type.HTTP)
+                                    .scheme("bearer")
+                                    .bearerFormat("JWT")
+                             ));
     }
 
     @Bean
