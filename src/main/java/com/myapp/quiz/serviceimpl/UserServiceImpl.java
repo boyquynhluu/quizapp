@@ -39,13 +39,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    
+
     @PersistenceContext
     private EntityManager entityManager;
 
     @Override
     public void registerUser(Double diemThi) {
-        log.info("START UPDATE ĐIỂM");
+        log.info("START REGISTER DIEM");
 
         try {
             // ✅ Lấy từ SecurityContext
@@ -63,9 +63,10 @@ public class UserServiceImpl implements UserService {
             Diem diem = new Diem();
             diem.setLanThi(Optional.ofNullable(user.getDiems()).map(List::size).orElse(0) + 1);
             diem.setDiemThi(diemThi);
+            diem.setNgayThi(LocalDateTime.now());
             diem.setUser(user);
 
-            if (user.getDiems() == null) {
+            if (Objects.isNull(user.getDiems())) {
                 user.setDiems(new ArrayList<>());
             }
             user.getDiems().add(diem);

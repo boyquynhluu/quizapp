@@ -1,5 +1,7 @@
 package com.myapp.quiz.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,6 +30,9 @@ public class Diem {
 
     @Column(name = "diem_thi")
     Double diemThi;
+
+    @Column(name = "ngay_thi")
+    LocalDateTime ngayThi;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

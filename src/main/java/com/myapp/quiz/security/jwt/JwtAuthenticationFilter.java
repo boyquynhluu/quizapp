@@ -1,6 +1,8 @@
 package com.myapp.quiz.security.jwt;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,7 +37,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
         // ✅ Bỏ qua các path không cần kiểm tra token
-        if (uri.equals("/api/v1/auth/login") || uri.equals("/api/v1/auth/register")) {
+        if (uri.equals("/api/v1/auth/login")||
+                uri.equals("/api/v1/auth/register") ||
+                uri.contains("/swagger-ui") ||
+                uri.contains("/v3/api-docs") ||
+                uri.contains("/swagger-ui.html")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (!uri.startsWith("/api/")) {
             filterChain.doFilter(request, response);
             return;
         }

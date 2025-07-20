@@ -1,5 +1,6 @@
 package com.myapp.quiz.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,12 +49,17 @@ public class QuizController {
         // Get all key
         Set<Integer> keys = answereRequestMap.keySet();
 
-        Map<String, Object> map = service.checkAnswers(answereRequestMap);
-        Integer correctCount = (Integer) map.get("correctCount");
+        double percent = 0;
+        Map<String, Object> map = new HashMap<>();
+        if (!keys.isEmpty()) {
+            map = service.checkAnswers(answereRequestMap);
+            Integer correctCount = (Integer) map.get("correctCount");
 
-        double percent = (correctCount * 100.0) / keys.size();
-        map.put("percent", percent);
-
+            percent = (correctCount * 100.0) / keys.size();
+            map.put("percent", percent);
+        } else {
+            map.put("percent", 0);
+        }
         // Register User
         userService.registerUser(percent);
 

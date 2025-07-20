@@ -58,9 +58,17 @@ public class SpringSecurity {
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/actuator/**").permitAll()
-            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-config/**").permitAll()
+            .requestMatchers(
+                    "/api/auth/**",
+                    "/actuator/**",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-config/**",
+                    "/swagger-ui.html"
+                ).permitAll()
             .requestMatchers("/resources/**", "/static/**", "/css/**", "/styles/**", "/js/**", "/img/**","/icon/**", "/images/**").permitAll()
             .requestMatchers("/api/v1/quiz").hasAnyAuthority(USER_ROLES.toArray(new String[0]))
+            .requestMatchers("/api/v1/diem").hasAnyAuthority(USER_ROLES.toArray(new String[0]))
             .anyRequest().authenticated()
         )
         .exceptionHandling(exception -> exception
