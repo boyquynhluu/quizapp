@@ -41,7 +41,7 @@ public class AuthController {
     private final CustomUserDetailsService customUserDetailsService;
     private final UserService userService;
 
-    @PostMapping(value = "/login", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/login")
     public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest authRequest, HttpServletRequest request, HttpServletResponse response) {
         log.info("START LOGIN CONTROLLER");
         String accessToken = authService.auth(authRequest, Constants.REQUEST_ACCESS_TOKEN);

@@ -33,7 +33,7 @@ public class User {
     int id;
 
     @Column(nullable = false, name = "user_name", length = 50)
-    private String username;
+    String username;
 
     @Column(nullable = false, name = "first_name", length = 50)
     String firstName;

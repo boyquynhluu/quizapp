@@ -1,5 +1,6 @@
 package com.myapp.quiz.entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -43,6 +44,9 @@ public class Quiz {
 
     @Column(name = "type_quiz")
     String typeQuiz;
+
+    @Column(name = "created_at")
+    LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "quiz", fetch = FetchType.LAZY)
     List<Answere> answeres;
