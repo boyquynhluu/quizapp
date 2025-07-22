@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.myapp.quiz.constants.Constants;
 import com.myapp.quiz.dto.AuthRequest;
 import com.myapp.quiz.dto.AuthResponse;
-import com.myapp.quiz.dto.RefreshTokenRequest;
 import com.myapp.quiz.dto.UserRequest;
 import com.myapp.quiz.security.jwt.JwtTokenProvider;
 import com.myapp.quiz.service.AuthService;
@@ -42,7 +41,8 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping(value = "/login")
-    public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest authRequest, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest authRequest, HttpServletRequest request,
+            HttpServletResponse response) {
         log.info("START LOGIN CONTROLLER");
         String accessToken = authService.auth(authRequest, Constants.REQUEST_ACCESS_TOKEN);
         String refreshToken = authService.auth(authRequest, Constants.REQUEST_REFRESH_TOKEN);
@@ -50,7 +50,8 @@ public class AuthController {
         // Register Refresh Token
         userService.registerRefreshToken(authRequest.getUsernameOrEmail(), refreshToken);
         // Set refresh token for cookie
-        response.setHeader(HttpHeaders.SET_COOKIE, this.setRefreshTokenForCookies(Constants.REFRESH_TOKEN, refreshToken).toString());
+        response.setHeader(HttpHeaders.SET_COOKIE,
+                this.setRefreshTokenForCookies(Constants.REFRESH_TOKEN, refreshToken).toString());
 
         AuthResponse jwtAuthResponse = new AuthResponse();
         jwtAuthResponse.setAccessToken(accessToken);
@@ -60,9 +61,12 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request) {
-        String refreshToken = request.getRefreshToken();
-
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+        // Get refresh token from cookie
+        String refreshToken = jwtTokenProvider.getRefreshTokenFromCookie(request);
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No refresh token found");
+        }
         // validate refreshToken
         jwtTokenProvider.validateToken(refreshToken);
         // Lấy username từ token
@@ -97,8 +101,7 @@ public class AuthController {
         // Xóa cookie phía client
         ResponseCookie cookie = ResponseCookie.from(Constants.REFRESH_TOKEN, Constants.REFRESH_TOKEN_BLANK)
                 .httpOnly(true).secure(true) // production
-                .path("/")
-                .maxAge(0) // xóa cookie
+                .path("/").maxAge(0) // xóa cookie
                 .build();
 
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -119,12 +122,8 @@ public class AuthController {
      * @param tokenValue
      */
     private ResponseCookie setRefreshTokenForCookies(String tokenKey, String tokenValue) {
-        return ResponseCookie.from(tokenKey, tokenValue)
-                .httpOnly(true)
-                .secure(false)              // ❗ Dev local bắt buộc dùng false
-                .sameSite("Lax")            // ❗ Lax phù hợp cho local HTTP
-                .path("/")
-                .maxAge(Duration.ofDays(7))
-                .build();
+        return ResponseCookie.from(tokenKey, tokenValue).httpOnly(true).secure(false) // ❗ Dev local bắt buộc dùng false
+                .sameSite("Lax") // ❗ Lax phù hợp cho local HTTP
+                .path("/").maxAge(Duration.ofDays(7)).build();
     }
 }

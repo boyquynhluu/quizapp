@@ -1,6 +1,10 @@
 server:
   port: 8080
-  
+  connection-timeout: 5s
+  tomcat:
+    keep-alive-timeout: 15s
+    max-connections: 200
+
 spring:
   application:
     name: Quiz App

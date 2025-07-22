@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
 
             Diem diem = new Diem();
             diem.setLanThi(Optional.ofNullable(user.getDiems()).map(List::size).orElse(0) + 1);
-            diem.setDiemThi(diemThi);
+            diem.setDiemThi(Math.round(diemThi * 100.0) / 100.0);
             diem.setNgayThi(LocalDateTime.now());
             diem.setUser(user);
 

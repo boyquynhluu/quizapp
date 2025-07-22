@@ -30,7 +30,7 @@ public class DiemServiceImpl implements DiemService {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    private static final String GET_ALL_DIEM = """
+    private static final String GET_ALL_DIEM_BY_NATIVE_QUERY = """
             SELECT 
                 user_id, 
                 user_name, 
@@ -57,6 +57,38 @@ public class DiemServiceImpl implements DiemService {
             WHERE rn = 1
             """;
 
+    private static final String GET_ALL_DIEM_BY_JPQL = """
+                SELECT new com.myapp.quiz.dto.DiemResponse(
+                d.user.id,
+                d.user.username,
+                d.user.fullName,
+                d.lanThi,
+                d.diemThi,
+                d.ngayThi
+            )
+            FROM Diem d
+            WHERE d.diemThi = (
+                SELECT MAX(d2.diemThi)
+                FROM Diem d2
+                WHERE d2.user.id = d.user.id
+            )
+            """;
+
+    private static final String GET_DIEM_BY_ID = """
+                SELECT new com.myapp.quiz.dto.DiemResponse(
+                d.user.id,
+                u.username,
+                u.fullName,
+                d.lanThi,
+                d.diemThi,
+                d.ngayThi
+            )
+            FROM Diem d
+            JOIN d.user u
+            WHERE d.user.id = :userId
+            ORDER BY d.diemThi DESC
+            """;
+
     private final DiemRepository diemRepository;
     private final UserRepository userRepository;
 
@@ -65,7 +97,7 @@ public class DiemServiceImpl implements DiemService {
 
     @Override
     public List<DiemResponse> getDiems() {
-        List<Object[]> objs = entityManager.createNativeQuery(GET_ALL_DIEM).getResultList();
+        List<Object[]> objs = entityManager.createNativeQuery(GET_ALL_DIEM_BY_NATIVE_QUERY).getResultList();
         log.info("START GET ALL DIEM - total: {}", objs.size());
         List<DiemResponse> diems = objs.stream().map(obj -> {
             Timestamp timestamp = (Timestamp) obj[5];
@@ -76,12 +108,25 @@ public class DiemServiceImpl implements DiemService {
                 (String) obj[2],
                 (int) obj[3],
                 (Double) obj[4],
-                convertLocaldateToString(dateTime)
+                dateTime
             );
         }).toList();
 
         log.info("END GET ALL DIEM - total: {}", diems.size());
         return diems;
+    }
+
+    @Override
+    public List<DiemResponse> getDiemsById(int userId) {
+        List<DiemResponse> results = entityManager.createQuery(
+                GET_DIEM_BY_ID,
+                DiemResponse.class
+            )
+            .setParameter("userId", userId)
+            .getResultList();
+
+        log.info("END GET ALL DIEM BY ID - Total: {}", results.size());
+        return results;
     }
 
     @Override
@@ -104,7 +149,7 @@ public class DiemServiceImpl implements DiemService {
      * @param date
      * @return
      */
-    private String convertLocaldateToString(LocalDateTime date) {
+    private static String convertLocaldateToString(LocalDateTime date) {
         if (date == null) return null;
         try {
             return date.format(DATE_FORMATTER);
@@ -113,4 +158,26 @@ public class DiemServiceImpl implements DiemService {
             throw e;
         }
     }
+
+    /**
+     * 
+     * @param userId
+     * @return
+     */
+    private String createSQLGetDetailsDiemByUserId(int userId) {
+         return new StringBuilder()
+                .append(" SELECT ")
+                .append("   d.user_id, ")
+                .append("   u.user_name, ")
+                .append("   u.full_name, ")
+                .append("   d.lan_thi, ")
+                .append("   d.diem_thi, ")
+                .append("   d.ngay_thi")
+                .append(" FROM tbl_diem d ")
+                .append(" INNER JOIN tbl_user u ON d.user_id = u.id ")
+                .append(" WHERE d.user_id = ").append(userId)
+                .append(" ORDER BY d.diem_thi DESC")
+                .toString();
+    }
+
 }
