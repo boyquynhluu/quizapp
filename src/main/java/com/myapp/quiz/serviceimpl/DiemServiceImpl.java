@@ -3,15 +3,11 @@ package com.myapp.quiz.serviceimpl;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.springframework.boot.autoconfigure.web.format.DateTimeFormatters;
 import org.springframework.stereotype.Service;
 
 import com.myapp.quiz.dto.DiemResponse;
-import com.myapp.quiz.entity.Diem;
 import com.myapp.quiz.entity.User;
 import com.myapp.quiz.repository.DiemRepository;
 import com.myapp.quiz.repository.UserRepository;

@@ -1,18 +1,19 @@
 package com.myapp.quiz.dto;
 
+import java.util.List;
+
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-@Setter
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RefreshTokenRequest {
-
-    String refreshToken;
+public class QuizRequest {
+    String question;
+    String type;
+    List<String> options;
+    List<Integer> answer;
+    String imageIndex;
 }

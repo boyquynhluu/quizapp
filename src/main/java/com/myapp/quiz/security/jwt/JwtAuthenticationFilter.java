@@ -2,7 +2,6 @@ package com.myapp.quiz.security.jwt;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +17,7 @@ import com.myapp.quiz.serviceimpl.CustomUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -37,16 +37,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
         // ✅ Bỏ qua các path không cần kiểm tra token
-        if (uri.equals("/api/v1/auth/login")||
-                uri.equals("/api/v1/auth/register") ||
+        if (uri.equals("/api/auth/login")||
+                uri.equals("/api/auth/refresh") ||
+                uri.equals("/api/auth/register") ||
                 uri.contains("/swagger-ui") ||
                 uri.contains("/v3/api-docs") ||
                 uri.contains("/swagger-ui.html")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        if (!uri.startsWith("/api/")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -95,7 +91,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.info(">>> Extracted JWT token: '{}'", token);
             return token;
         }
-        return null;
+
+        if (request.getCookies() == null) return null;
+
+        return Arrays.stream(request.getCookies())
+                .filter(c -> "accessToken".equals(c.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
 }

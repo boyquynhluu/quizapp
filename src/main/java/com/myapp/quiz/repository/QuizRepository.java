@@ -8,4 +8,5 @@ import com.myapp.quiz.entity.Quiz;
 @Repository
 public interface QuizRepository extends JpaRepository<Quiz, Integer> {
 
+    Quiz getQuizById(int id);
 }

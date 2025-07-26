@@ -45,6 +45,9 @@ spring:
   h2:
     console:
       enabled: true
+#Upload file
+file:
+  upload-dir: uploads
 
 # LOGGIN CONFIG
 logging:

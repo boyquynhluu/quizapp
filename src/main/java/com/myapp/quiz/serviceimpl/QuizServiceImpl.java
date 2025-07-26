@@ -1,20 +1,26 @@
 package com.myapp.quiz.serviceimpl;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.myapp.quiz.dto.AnswereResponse;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myapp.quiz.dto.QuizResponse;
 import com.myapp.quiz.entity.Quiz;
-import com.myapp.quiz.repository.AnswereRepository;
 import com.myapp.quiz.repository.QuizRepository;
 import com.myapp.quiz.service.QuizService;
 
@@ -27,8 +33,31 @@ import lombok.extern.slf4j.Slf4j;
 public class QuizServiceImpl implements QuizService {
 
     private final QuizRepository quizRepository;
-    private final AnswereRepository answereRepository;
     private final ModelMapper mapper;
+
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
+    @Override
+    public Quiz saveQuiz(String question, String type, String optionsJson, String answerJson, MultipartFile image)
+            throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Quiz quiz = new Quiz();
+        quiz.setQuestion(question);
+        quiz.setType(type);
+        quiz.setOptions(objectMapper.readValue(optionsJson, new TypeReference<List<String>>() {}));
+        quiz.setAnswers(objectMapper.readValue(answerJson, new TypeReference<List<Integer>>() {}));
+
+        if (image != null && !image.isEmpty()) {
+            Files.createDirectories(Paths.get(uploadDir));
+            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+            Files.copy(image.getInputStream(), Paths.get(uploadDir).resolve(fileName),
+                    StandardCopyOption.REPLACE_EXISTING);
+            quiz.setImageName(fileName);
+        }
+
+        return quizRepository.save(quiz);
+    }
 
     @Override
     public List<QuizResponse> getAllQuiz() {
@@ -46,42 +75,21 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    public Map<String, Object> checkAnswers(Map<Integer, Object> answereRequest) {
-        log.info("START CHECK ANSWERS");
-        int correctCount = 0;
-        Map<String, Object> map = new HashMap<>();
-        List<AnswereResponse> resultChecks = new ArrayList<>();
-
-        for (Map.Entry<Integer, Object> entry : answereRequest.entrySet()) {
-            AnswereResponse result = new AnswereResponse();
-            Integer quizId = entry.getKey();
-            // Set quizId
-            result.setId(quizId);
-            List<String> correctAnswers = answereRepository.getAllAnswere(quizId);
-            Object userAswerer = entry.getValue();
-
-            if (userAswerer instanceof List) {
-                List<?> submittedList = (List<?>) userAswerer;
-                boolean isEqual = CollectionUtils.isEqualCollection(submittedList, correctAnswers);
-                if (isEqual) {
-                    correctCount += 1;
-                    result.setChecked(Boolean.TRUE);
-                } else {
-                    result.setChecked(Boolean.FALSE);
-                }
-            } else {
-                String value = (String) userAswerer;
-                if (correctAnswers.contains(value)) {
-                    correctCount += 1;
-                    result.setChecked(Boolean.TRUE);
-                } else {
-                    result.setChecked(Boolean.FALSE);
-                }
-            }
-            resultChecks.add(result);
-        }
-        map.put("result", resultChecks);
-        map.put("correctCount", correctCount);
-        return map;
+    public Map<Integer, QuizResponse> findQuizByIds(List<Integer> quizIds) {
+        return quizRepository.findAllById(quizIds).stream()
+                .sorted(Comparator.comparingInt(q -> quizIds.indexOf(q.getId())))
+                .collect(Collectors.toMap(
+                        Quiz::getId,
+                        quiz -> mapper.map(quiz, QuizResponse.class),
+                        (existing, replacement) -> existing,
+                        LinkedHashMap::new
+                ));
     }
+
+    @Override
+    public Quiz getById(int id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

@@ -49,19 +49,19 @@ public class AuthController {
 
         // Register Refresh Token
         userService.registerRefreshToken(authRequest.getUsernameOrEmail(), refreshToken);
-        // Set refresh token for cookie
-        response.setHeader(HttpHeaders.SET_COOKIE,
-                this.setRefreshTokenForCookies(Constants.REFRESH_TOKEN, refreshToken).toString());
+
+        // Set Token in cookie
+        this.setTokenInCookie(response, accessToken, refreshToken);
 
         AuthResponse jwtAuthResponse = new AuthResponse();
         jwtAuthResponse.setAccessToken(accessToken);
-        jwtAuthResponse.setRefreshToken(refreshToken);
 
         return ResponseEntity.ok(jwtAuthResponse);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        log.info("START REFRESH TOKEN");
         // Get refresh token from cookie
         String refreshToken = jwtTokenProvider.getRefreshTokenFromCookie(request);
         if (refreshToken == null) {
@@ -80,15 +80,18 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities()),
                 userDetails.getUsername());
 
+        // Set Token in cookie
+        this.setTokenInCookie(response, newAccessToken, refreshToken);
+
         AuthResponse jwtAuthResponse = new AuthResponse();
         jwtAuthResponse.setAccessToken(newAccessToken);
-        jwtAuthResponse.setRefreshToken(refreshToken);
 
         return ResponseEntity.ok(jwtAuthResponse);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        log.info("START LOGOUT TOKEN");
         // Get refresh token from cookie
         String refreshToken = jwtTokenProvider.getRefreshTokenFromCookie(request);
         // validate refreshToken
@@ -98,21 +101,46 @@ public class AuthController {
         // Delete Token
         userService.deleteByRefreshToken(username);
 
-        // Xóa cookie phía client
-        ResponseCookie cookie = ResponseCookie.from(Constants.REFRESH_TOKEN, Constants.REFRESH_TOKEN_BLANK)
-                .httpOnly(true).secure(true) // production
-                .path("/").maxAge(0) // xóa cookie
+        // Xóa cả refresh token và access token cookie
+        ResponseCookie deleteRefresh = ResponseCookie.from(Constants.REFRESH_TOKEN, "")
+                .httpOnly(true)
+                .secure(false) // Dev false, Prod true
+                .path("/")
+                .maxAge(0)
                 .build();
 
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        ResponseCookie deleteAccess = ResponseCookie.from(Constants.ACCESS_TOKEN, "")
+                .httpOnly(false) // access token FE có thể đọc
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteRefresh.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteAccess.toString());
+
         return new ResponseEntity<>("Deleted", HttpStatus.OK);
     }
 
     @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> registerUser(@Valid @RequestBody UserRequest userRequest) {
-
+        log.info("START REGISTER TOKEN");
         authService.register(userRequest);
         return new ResponseEntity<>("Đăng ký thành công", HttpStatus.OK);
+    }
+
+    /**
+     * 
+     * @param response
+     * @param accessToken
+     * @param refreshToken
+     */
+    private void setTokenInCookie(HttpServletResponse response, String accessToken, String refreshToken) {
+        ResponseCookie accessCookie = setCookie(Constants.ACCESS_TOKEN, accessToken, false); // FE có thể đọc
+        ResponseCookie refreshCookie = setCookie(Constants.REFRESH_TOKEN, refreshToken, true); // HttpOnly
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
     }
 
     /**
@@ -121,9 +149,14 @@ public class AuthController {
      * @param tokenKey
      * @param tokenValue
      */
-    private ResponseCookie setRefreshTokenForCookies(String tokenKey, String tokenValue) {
-        return ResponseCookie.from(tokenKey, tokenValue).httpOnly(true).secure(false) // ❗ Dev local bắt buộc dùng false
-                .sameSite("Lax") // ❗ Lax phù hợp cho local HTTP
-                .path("/").maxAge(Duration.ofDays(7)).build();
+    private ResponseCookie setCookie(String name, String value, boolean httpOnly) {
+        return ResponseCookie.from(name, value)
+                .httpOnly(httpOnly)
+                .secure(false) // local dev
+//                .sameSite("Lax")
+                .sameSite("None")
+                .path("/")
+                .maxAge(Duration.ofDays(7))
+                .build();
     }
 }

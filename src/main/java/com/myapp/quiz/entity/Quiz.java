@@ -1,15 +1,17 @@
 package com.myapp.quiz.entity;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
+import com.myapp.quiz.utils.ListIntegerToJsonConverter;
+import com.myapp.quiz.utils.ListStringToJsonConverter;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -27,28 +29,22 @@ public class Quiz {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
-    @Column(name = "title", nullable = false)
-    String title;
+    @Column(name = "question")
+    String question;
 
-    @Column(name = "answear1_quiz")
-    String answear1Quiz;
+    @Column(name = "type")
+    String type;
 
-    @Column(name = "answear2_quiz")
-    String answear2Quiz;
+    @Lob
+    @Convert(converter = ListStringToJsonConverter.class)
+    @Column(name = "options_json", columnDefinition = "TEXT")
+    List<String> options;
 
-    @Column(name = "answear3_quiz")
-    String answear3Quiz;
+    @Lob
+    @Convert(converter = ListIntegerToJsonConverter.class)
+    @Column(name = "answers_json", columnDefinition = "TEXT")
+    List<Integer> answers;
 
-    @Column(name = "answear4_quiz")
-    String answear4Quiz;
-
-    @Column(name = "type_quiz")
-    String typeQuiz;
-
-    @Column(name = "created_at")
-    LocalDateTime createdAt;
-
-    @OneToMany(mappedBy = "quiz", fetch = FetchType.LAZY)
-    List<Answere> answeres;
-
+    @Column(name = "image_name")
+    String imageName;
 }

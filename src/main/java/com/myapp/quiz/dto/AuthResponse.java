@@ -11,6 +11,5 @@ import lombok.experimental.FieldDefaults;
 public class AuthResponse {
 
     String accessToken;
-    String refreshToken;
     String tokenType = Constants.BEARER_TOKEN;
 }
