@@ -115,7 +115,7 @@ public class JwtTokenProvider {
         } catch (MalformedJwtException e) {
             log.error("Invalid JWT token: {}", e);
         } catch (ExpiredJwtException e) {
-            log.error("JWT token is expired: {}", e);
+            log.error("JWT token is expired: {}", e.getMessage(), e);
             throw new CustomException("JWT expired", HttpStatus.UNAUTHORIZED);
         } catch (JwtException e) {
             throw new CustomException("Invalid JWT", HttpStatus.UNAUTHORIZED);

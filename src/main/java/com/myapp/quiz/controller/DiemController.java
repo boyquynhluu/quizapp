@@ -9,9 +9,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.myapp.quiz.dto.DiemRequest;
 import com.myapp.quiz.dto.DiemResponse;
 import com.myapp.quiz.service.DiemService;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +30,15 @@ public class DiemController {
         log.info("START GET DIEM CONTROLLER");
 
         List<DiemResponse> diems = diemService.getDiems();
+
+        return new ResponseEntity<>(diems, HttpStatus.OK);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<List<DiemResponse>> getDiemById(@RequestBody DiemRequest diemRequest) {
+        log.info("START GET DIEM BY ID");
+
+        List<DiemResponse> diems = diemService.getDiemsById(diemRequest.getUserId());
 
         return new ResponseEntity<>(diems, HttpStatus.OK);
     }

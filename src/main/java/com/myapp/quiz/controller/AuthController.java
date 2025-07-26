@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.myapp.quiz.constants.Constants;
 import com.myapp.quiz.dto.AuthRequest;
 import com.myapp.quiz.dto.AuthResponse;
-import com.myapp.quiz.dto.RefreshTokenRequest;
 import com.myapp.quiz.dto.UserRequest;
 import com.myapp.quiz.security.jwt.JwtTokenProvider;
 import com.myapp.quiz.service.AuthService;
@@ -42,27 +41,32 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping(value = "/login")
-    public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest authRequest, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<AuthResponse> authenticate(@RequestBody AuthRequest authRequest, HttpServletRequest request,
+            HttpServletResponse response) {
         log.info("START LOGIN CONTROLLER");
         String accessToken = authService.auth(authRequest, Constants.REQUEST_ACCESS_TOKEN);
         String refreshToken = authService.auth(authRequest, Constants.REQUEST_REFRESH_TOKEN);
 
         // Register Refresh Token
         userService.registerRefreshToken(authRequest.getUsernameOrEmail(), refreshToken);
-        // Set refresh token for cookie
-        response.setHeader(HttpHeaders.SET_COOKIE, this.setRefreshTokenForCookies(Constants.REFRESH_TOKEN, refreshToken).toString());
+
+        // Set Token in cookie
+        this.setTokenInCookie(response, accessToken, refreshToken);
 
         AuthResponse jwtAuthResponse = new AuthResponse();
         jwtAuthResponse.setAccessToken(accessToken);
-        jwtAuthResponse.setRefreshToken(refreshToken);
 
         return ResponseEntity.ok(jwtAuthResponse);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request) {
-        String refreshToken = request.getRefreshToken();
-
+    public ResponseEntity<?> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+        log.info("START REFRESH TOKEN");
+        // Get refresh token from cookie
+        String refreshToken = jwtTokenProvider.getRefreshTokenFromCookie(request);
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No refresh token found");
+        }
         // validate refreshToken
         jwtTokenProvider.validateToken(refreshToken);
         // Lấy username từ token
@@ -76,15 +80,18 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities()),
                 userDetails.getUsername());
 
+        // Set Token in cookie
+        this.setTokenInCookie(response, newAccessToken, refreshToken);
+
         AuthResponse jwtAuthResponse = new AuthResponse();
         jwtAuthResponse.setAccessToken(newAccessToken);
-        jwtAuthResponse.setRefreshToken(refreshToken);
 
         return ResponseEntity.ok(jwtAuthResponse);
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        log.info("START LOGOUT TOKEN");
         // Get refresh token from cookie
         String refreshToken = jwtTokenProvider.getRefreshTokenFromCookie(request);
         // validate refreshToken
@@ -94,22 +101,46 @@ public class AuthController {
         // Delete Token
         userService.deleteByRefreshToken(username);
 
-        // Xóa cookie phía client
-        ResponseCookie cookie = ResponseCookie.from(Constants.REFRESH_TOKEN, Constants.REFRESH_TOKEN_BLANK)
-                .httpOnly(true).secure(true) // production
+        // Xóa cả refresh token và access token cookie
+        ResponseCookie deleteRefresh = ResponseCookie.from(Constants.REFRESH_TOKEN, "")
+                .httpOnly(true)
+                .secure(false) // Dev false, Prod true
                 .path("/")
-                .maxAge(0) // xóa cookie
+                .maxAge(0)
                 .build();
 
-        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        ResponseCookie deleteAccess = ResponseCookie.from(Constants.ACCESS_TOKEN, "")
+                .httpOnly(false) // access token FE có thể đọc
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteRefresh.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteAccess.toString());
+
         return new ResponseEntity<>("Deleted", HttpStatus.OK);
     }
 
     @PostMapping(value = "/register", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> registerUser(@Valid @RequestBody UserRequest userRequest) {
-
+        log.info("START REGISTER TOKEN");
         authService.register(userRequest);
         return new ResponseEntity<>("Đăng ký thành công", HttpStatus.OK);
+    }
+
+    /**
+     * 
+     * @param response
+     * @param accessToken
+     * @param refreshToken
+     */
+    private void setTokenInCookie(HttpServletResponse response, String accessToken, String refreshToken) {
+        ResponseCookie accessCookie = setCookie(Constants.ACCESS_TOKEN, accessToken, false); // FE có thể đọc
+        ResponseCookie refreshCookie = setCookie(Constants.REFRESH_TOKEN, refreshToken, true); // HttpOnly
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
     }
 
     /**
@@ -118,11 +149,12 @@ public class AuthController {
      * @param tokenKey
      * @param tokenValue
      */
-    private ResponseCookie setRefreshTokenForCookies(String tokenKey, String tokenValue) {
-        return ResponseCookie.from(tokenKey, tokenValue)
-                .httpOnly(true)
-                .secure(false)              // ❗ Dev local bắt buộc dùng false
-                .sameSite("Lax")            // ❗ Lax phù hợp cho local HTTP
+    private ResponseCookie setCookie(String name, String value, boolean httpOnly) {
+        return ResponseCookie.from(name, value)
+                .httpOnly(httpOnly)
+                .secure(false) // local dev
+//                .sameSite("Lax")
+                .sameSite("None")
                 .path("/")
                 .maxAge(Duration.ofDays(7))
                 .build();
