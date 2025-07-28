@@ -19,29 +19,28 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @Entity
-@Table(name = "tbl_refresh_token")
+@Table(name = "tbl_verification_token")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RefreshToken {
-
+public class VerificationToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
-    @Column(name = "refresh_token")
+    @Column(name = "token", unique = true)
     String token;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     LocalDateTime createdAt;
 
-    @Column(name = "expiration_at")
-    LocalDateTime expirationAt;
+    @Column(name = "expiry_date", nullable = false)
+    LocalDateTime expiryDate;
 
     @OneToOne
     @JoinColumn(
         name = "user_id", 
         referencedColumnName = "id", 
         unique = true,
-        foreignKey = @ForeignKey(name = "fk_refresh_token_user")
+        foreignKey = @ForeignKey(name = "fk_verification_token_user")
     )
     User user;
 }

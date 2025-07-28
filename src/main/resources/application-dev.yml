@@ -35,13 +35,14 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: vanductai.dhv@gmail.com
-    password: jtii hajw fwan ktda
+    password: mzjl fppb syws uuvb
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+
   h2:
     console:
       enabled: true
@@ -53,13 +54,14 @@ file:
 logging:
   level:
     "[org.springframework.security]": DEBUG
+    "[org.springframework.mail]": DEBUG
 
 app:
   jwt:
     secret: daf66e01593f61a15b857cf433aae03a005812b31234e149036bcc8dee755dbb
-    expiration-milliseconds: 300000
+    expiration-milliseconds: 43200000
     refresh:
-      expiration-milliseconds: 600000
+      expiration-milliseconds: 86400000
 
 open:
   api:

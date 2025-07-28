@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -34,14 +35,15 @@ public class QuizServiceImpl implements QuizService {
 
     private final QuizRepository quizRepository;
     private final ModelMapper mapper;
-
+    private final ObjectMapper objectMapper;
+    
     @Value("${file.upload-dir}")
     private String uploadDir;
 
     @Override
     public Quiz saveQuiz(String question, String type, String optionsJson, String answerJson, MultipartFile image)
             throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
+
         Quiz quiz = new Quiz();
         quiz.setQuestion(question);
         quiz.setType(type);
@@ -55,16 +57,17 @@ public class QuizServiceImpl implements QuizService {
                     StandardCopyOption.REPLACE_EXISTING);
             quiz.setImageName(fileName);
         }
+        quiz.setCreatedAt(LocalDateTime.now());
 
         return quizRepository.save(quiz);
     }
 
     @Override
-    public List<QuizResponse> getAllQuiz() {
+    public List<QuizResponse> getRandomQuizzes() {
         try {
             log.info("START QUIZ SERVICE");
 
-            List<Quiz> quizs = quizRepository.findAll();
+            List<Quiz> quizs = quizRepository.findRandom10Quizzes();
 
             return mapper.map(quizs, new TypeToken<List<QuizResponse>>() {
             }.getType());
