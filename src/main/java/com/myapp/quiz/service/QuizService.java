@@ -11,7 +11,7 @@ import com.myapp.quiz.entity.Quiz;
 
 public interface QuizService {
 
-    public List<QuizResponse> getAllQuiz();
+    public List<QuizResponse> getRandomQuizzes();
 
     public Quiz getById(int id);
 

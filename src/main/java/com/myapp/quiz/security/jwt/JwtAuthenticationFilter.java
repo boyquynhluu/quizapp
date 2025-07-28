@@ -38,6 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         // ✅ Bỏ qua các path không cần kiểm tra token
         if (uri.equals("/api/auth/login")||
+                uri.equals("/api/auth/logout") ||
                 uri.equals("/api/auth/refresh") ||
                 uri.equals("/api/auth/register") ||
                 uri.contains("/swagger-ui") ||

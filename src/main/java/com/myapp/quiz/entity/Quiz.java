@@ -1,5 +1,6 @@
 package com.myapp.quiz.entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.myapp.quiz.utils.ListIntegerToJsonConverter;
@@ -12,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -47,4 +49,14 @@ public class Quiz {
 
     @Column(name = "image_name")
     String imageName;
+
+    @Column(name = "created_at")
+    LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }

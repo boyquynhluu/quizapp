@@ -3,6 +3,7 @@ package com.myapp.quiz.serviceimpl;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,10 +35,17 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user = userRepository.findByUsername(usernameOrEmail)
                         .orElseThrow(() -> new UsernameNotFoundException("User not exist by Username or Email"));
             }
+
+            if(!user.isEnabled()) {
+                throw new DisabledException("Tài khoản chưa được kích hoạt!");
+            }
+
             Set<GrantedAuthority> authorities = user.getRoles().stream()
                     .map((role) -> new SimpleGrantedAuthority(role.getRoleName())).collect(Collectors.toSet());
 
-            return new org.springframework.security.core.userdetails.User(usernameOrEmail, user.getPasswordHash(),
+            return new org.springframework.security.core.userdetails.User(
+                    usernameOrEmail,
+                    user.getPasswordHash(),
                     authorities);
         } catch (Exception e) {
             log.error("Find By username or email error: ", e);

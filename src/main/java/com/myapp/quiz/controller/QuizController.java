@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,11 +42,12 @@ public class QuizController {
     private final QuizService quizService;
     private final ModelMapper mapper;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
 
     @GetMapping
-    public ResponseEntity<List<QuizResponse>> getAllQuiz() {
+    public ResponseEntity<List<QuizResponse>> getRandomQuizzes() {
         log.info("QUIZ CONTROLLER");
-        List<QuizResponse> quizDtos = quizService.getAllQuiz();
+        List<QuizResponse> quizDtos = quizService.getRandomQuizzes();
 
         List<QuizResponse> quizResponses = mapper.map(quizDtos, new TypeToken<List<QuizResponse>>() {
         }.getType());
@@ -69,8 +71,9 @@ public class QuizController {
             QuizResponse quiz = quizMap.get(ans.getQuizId());
 
             boolean isCorrect = quiz != null && checkAnswered(ans, quiz);
-            if (isCorrect)
+            if (isCorrect) {
                 correctCount++;
+            }
             answereResponses.add(new AnswereResponse(ans.getQuizId(), isCorrect));
         }
 
@@ -93,8 +96,7 @@ public class QuizController {
             @RequestPart(value = "images", required = false) List<MultipartFile> images) throws IOException {
 
         // Parse JSON thành list
-        ObjectMapper mapper = new ObjectMapper();
-        List<QuizRequest> quizList = mapper.readValue(quizzesJson, new TypeReference<>() {
+        List<QuizRequest> quizList = objectMapper.readValue(quizzesJson, new TypeReference<>() {
         });
 
         for (int i = 0; i < quizList.size(); i++) {
@@ -107,8 +109,8 @@ public class QuizController {
             }
 
             quizService.saveQuiz(quiz.getQuestion(), quiz.getType(),
-                                 mapper.writeValueAsString(quiz.getOptions()),
-                                 mapper.writeValueAsString(quiz.getAnswer()),
+                         objectMapper.writeValueAsString(quiz.getOptions()),
+                         objectMapper.writeValueAsString(quiz.getAnswer()),
                                  image);
         }
 
@@ -121,12 +123,14 @@ public class QuizController {
  * @return
  */
     private boolean checkAnswered(AnswereRequest answereRequest, QuizResponse quiz) {
-        if (quiz == null) return false;
+        if (Objects.isNull(quiz)) {
+            return false;
+        }
 
         // Lấy đáp án đúng
         Set<String> correctAnswers = quiz.getAnswers().stream()
                 .map(i -> quiz.getOptions().get(i))
-                .map(s -> s.trim().toLowerCase()) // tránh phân biệt hoa thường
+                .map(s -> s.trim().toLowerCase())
                 .collect(Collectors.toSet());
 
         // Lấy đáp án user chọn

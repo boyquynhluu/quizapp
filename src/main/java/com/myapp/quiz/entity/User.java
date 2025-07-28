@@ -53,6 +53,9 @@ public class User {
     @Column(name = "created_at")
     LocalDateTime createdAt;
 
+    @Column(name = "enabled", nullable = false)
+    boolean enabled = false;
+
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "tbl_users_roles",
                joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
@@ -64,4 +67,7 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     RefreshToken refreshToken;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    VerificationToken verificationToken;
 }
