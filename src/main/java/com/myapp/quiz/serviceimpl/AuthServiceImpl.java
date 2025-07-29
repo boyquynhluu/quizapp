@@ -98,8 +98,10 @@ public class AuthServiceImpl implements AuthService {
             user.setPasswordHash(passwordEncoder.encode(userRequest.getPassword()));
             user.setCreatedAt(LocalDateTime.now());
             // Gán role mặc định: ROLE_USER
-            Role roleUser = roleRepository.findByRoleName("ROLE_USER")
-                    .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+//            Role roleUser = roleRepository.findByRoleName("ROLE_USER")
+//                    .orElseThrow(() -> new IllegalArgumentException("Role not found"));
+            Role roleUser = new Role();
+            roleUser.setRoleName("ROLE_USER");
             user.setRoles(List.of(roleUser));
             user.setDiems(List.of(new Diem()));
             user.setEnabled(false);
