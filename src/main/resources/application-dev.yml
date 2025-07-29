@@ -13,9 +13,12 @@ spring:
     driverClassName: com.mysql.cj.jdbc.Driver
 
 # ===== DATABASE CONFIG =====
-    url: jdbc:mysql://localhost:3306/my_app?useSSL=false
-    username: root
-    password: root
+    #url: jdbc:mysql://localhost:3306/my_app?useSSL=false
+    #username: root
+    #password: root
+    url: "jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}"
+    username: ${MYSQLUSER}
+    password: ${MYSQLPASSWORD}
 
 # ===== HIKARICP POOL CONFIG (Tùy chọn để tối ưu hiệu suất) =====
     hikari:

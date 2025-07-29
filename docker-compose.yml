@@ -1,0 +1,50 @@
+#Config use test localhost
+#version: "3.8"
+#
+#services:
+#  mysql:
+#    image: mysql:8.0
+#    ports:
+#      - "3307:3306"
+#    environment:
+#      MYSQL_ROOT_PASSWORD: root
+#      MYSQL_DATABASE: my_app
+#    volumes:
+#      - mysql_data:/var/lib/mysql
+#
+#  backend:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      MYSQLHOST: host.docker.internal
+#      MYSQLPORT: 3306
+#      MYSQLUSER: root
+#      MYSQLPASSWORD: root
+#      MYSQLDATABASE: my_app
+#      SPRING_PROFILES_ACTIVE: dev
+#    depends_on:
+#      - mysql
+#
+#volumes:
+#  mysql_data:
+version: "3.8"
+
+services:
+  backend:
+    image: quizapp-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      MYSQLHOST: mysql.railway.internal
+      MYSQLPORT: 3306
+      MYSQLUSER: root
+      MYSQLPASSWORD: vjWaAEfQvWCkTojgwmuUGjXbpRfkDTjG
+      MYSQLDATABASE: railway
+      SPRING_PROFILES_ACTIVE: dev
+
