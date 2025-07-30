@@ -18,8 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 public class SendMail {
 
     private final JavaMailSender javaMailSender;
+
     @Value("${spring.mail.username}")
     private String sender;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     /**
      * 
      * @param user
@@ -37,7 +42,7 @@ public class SendMail {
             mimeMessageHelper.setTo(user.getEmail());
             mimeMessageHelper.setSubject("Kích hoạt tài khoản");
             
-            String verifyUrl = "http://localhost:3000/verify?token=" + token;
+            String verifyUrl = frontendUrl + "/verify?token=" + token;
             String htmlContent = """
                     <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
                         <div style="max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 3px 8px rgba(0,0,0,0.1);">

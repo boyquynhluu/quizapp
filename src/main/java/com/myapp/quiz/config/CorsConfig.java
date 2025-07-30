@@ -15,7 +15,9 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowCredentials(true)
-                        .allowedOrigins("http://localhost:3000")
+                        .allowedOrigins(
+                                "http://localhost:3000",
+                                "https://quizapp-fe.vercel.app")
                         .allowedMethods("POST", "PATCH", "PUT", "DELETE", "GET")
                         .allowedHeaders("*")
                         .allowCredentials(true); // ✅ Cho phép gửi cookie;

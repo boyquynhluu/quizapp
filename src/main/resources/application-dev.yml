@@ -70,6 +70,8 @@ app:
     expiration-milliseconds: 43200000
     refresh:
       expiration-milliseconds: 86400000
+  frontend:
+    url: https://quizapp-fe.vercel.app
 
 open:
   api:

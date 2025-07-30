@@ -45,7 +45,12 @@ public class SpringSecurity {
 
         http.cors(cors -> cors.configurationSource(request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+            config.setAllowedOrigins(
+                    Arrays.asList(
+                        "http://localhost:3000",
+                        "https://quizapp-fe.vercel.app"
+                    )
+                );
             config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
             config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
             config.setAllowCredentials(true); // ✅ Bắt buộc có nếu bạn dùng localStorage hoặc Cookie
