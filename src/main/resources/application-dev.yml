@@ -13,9 +13,9 @@ spring:
     driverClassName: com.mysql.cj.jdbc.Driver
 
 # ===== DATABASE CONFIG =====
-    #url: jdbc:mysql://localhost:3306/my_app?useSSL=false
-    #username: root
-    #password: root
+#    url: jdbc:mysql://localhost:3306/my_app?useSSL=false
+#    username: root
+#    password: root
     url: "jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}"
     username: ${MYSQLUSER}
     password: ${MYSQLPASSWORD}
@@ -79,3 +79,13 @@ management:
     web:
       exposure:
         include: '*'
+
+#MYSQLHOST: host.docker.internal
+#MYSQLPORT: 3306
+#MYSQLUSER: root
+#MYSQLPASSWORD: root
+#MYSQLDATABASE: my_app
+#SPRING_PROFILES_ACTIVE: dev
+#CLOUDINARY_CLOUD_NAME: dsulmnzqj
+#CLOUDINARY_API_KEY: 876858138226584
+#CLOUDINARY_API_SECRET: OVOCoq1mAxUsCIlioWd06RSy9ms

@@ -25,11 +25,15 @@
 #      MYSQLPASSWORD: root
 #      MYSQLDATABASE: my_app
 #      SPRING_PROFILES_ACTIVE: dev
+#      CLOUDINARY_CLOUD_NAME: dsulmnzqj
+#      CLOUDINARY_API_KEY: 876858138226584
+#      CLOUDINARY_API_SECRET: OVOCoq1mAxUsCIlioWd06RSy9ms
 #    depends_on:
 #      - mysql
 #
 #volumes:
 #  mysql_data:
+
 version: "3.8"
 
 services:
@@ -47,4 +51,6 @@ services:
       MYSQLPASSWORD: vjWaAEfQvWCkTojgwmuUGjXbpRfkDTjG
       MYSQLDATABASE: railway
       SPRING_PROFILES_ACTIVE: dev
-
+      CLOUDINARY_CLOUD_NAME: dsulmnzqj
+      CLOUDINARY_API_KEY: 876858138226584
+      CLOUDINARY_API_SECRET: OVOCoq1mAxUsCIlioWd06RSy9ms
