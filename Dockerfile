@@ -1,14 +1,13 @@
-# Sử dụng JDK nhẹ
-FROM eclipse-temurin:17-jdk-alpine
-
-# Thư mục làm việc trong container
+# Stage 1: Build JAR
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Copy file jar đã build vào container
-COPY target/*.jar app.jar
-
-# Expose port 8080
+# Stage 2: Run JAR
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-
-# Lệnh chạy app
 ENTRYPOINT ["java", "-jar", "app.jar"]
