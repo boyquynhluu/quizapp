@@ -3,22 +3,27 @@ spring:
   jpa:
     properties:
       hibernate:
-        "[dialect]": org.hibernate.dialect.MySQL8Dialect
+#        "[dialect]": org.hibernate.dialect.MySQL8Dialect
+        "[dialect]": org.hibernate.dialect.PostgreSQLDialect
         "[format_sql]": true
     generate-ddl: true
     hibernate:
       ddl-auto: update
     show-sql: true
   datasource:
-    driverClassName: com.mysql.cj.jdbc.Driver
+    #driverClassName: com.mysql.cj.jdbc.Driver
+    driverClassName: org.postgresql.Driver
 
 # ===== DATABASE CONFIG =====
 #    url: jdbc:mysql://localhost:3306/my_app?useSSL=false
 #    username: root
 #    password: root
-    url: "jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
-    username: ${MYSQLUSER}
-    password: ${MYSQLPASSWORD}
+#    url: "jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+#    username: ${MYSQLUSER}
+#    password: ${MYSQLPASSWORD}
+    url: "jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+    username: ${PGUSER}
+    password: ${PGPASSWORD}
 
 # ===== HIKARICP POOL CONFIG (Tùy chọn để tối ưu hiệu suất) =====
     hikari:
