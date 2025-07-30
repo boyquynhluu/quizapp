@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myapp.quiz.dto.QuizResponse;
@@ -36,6 +38,7 @@ public class QuizServiceImpl implements QuizService {
     private final QuizRepository quizRepository;
     private final ModelMapper mapper;
     private final ObjectMapper objectMapper;
+    private final Cloudinary cloudinary;
     
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -50,12 +53,16 @@ public class QuizServiceImpl implements QuizService {
         quiz.setOptions(objectMapper.readValue(optionsJson, new TypeReference<List<String>>() {}));
         quiz.setAnswers(objectMapper.readValue(answerJson, new TypeReference<List<Integer>>() {}));
 
-        if (image != null && !image.isEmpty()) {
-            Files.createDirectories(Paths.get(uploadDir));
-            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-            Files.copy(image.getInputStream(), Paths.get(uploadDir).resolve(fileName),
-                    StandardCopyOption.REPLACE_EXISTING);
-            quiz.setImageName(fileName);
+//        if (image != null && !image.isEmpty()) {
+//            Files.createDirectories(Paths.get(uploadDir));
+//            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+//            Files.copy(image.getInputStream(), Paths.get(uploadDir).resolve(fileName),
+//                    StandardCopyOption.REPLACE_EXISTING);
+//            quiz.setImageName(fileName);
+//        }
+        if(image != null && !image.isEmpty()) {
+            String pathImage = this.uploadImage(image);
+            quiz.setImageName(this.uploadImage(image));
         }
         quiz.setCreatedAt(LocalDateTime.now());
 
@@ -95,4 +102,16 @@ public class QuizServiceImpl implements QuizService {
         return null;
     }
 
+    /**
+     * 
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    private String uploadImage(MultipartFile file) throws IOException {
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                ObjectUtils.asMap("folder", "uploads"));
+        return uploadResult.get("secure_url").toString();
+    }
+    
 }
