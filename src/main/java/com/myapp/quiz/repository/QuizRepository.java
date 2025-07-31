@@ -13,7 +13,7 @@ public interface QuizRepository extends JpaRepository<Quiz, Integer> {
 
     Quiz getQuizById(int id);
 
-    @Query(value = "SELECT * FROM tbl_quiz ORDER BY RAND() LIMIT 10", nativeQuery = true)
+    @Query(value = "SELECT * FROM tbl_quiz ORDER BY RANDOM() LIMIT 10", nativeQuery = true)
     List<Quiz> findRandom10Quizzes();
 
     @Query(value = "SELECT * FROM tbl_quiz ORDER BY created_at DESC LIMIT 10", nativeQuery = true)
