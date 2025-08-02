@@ -12,7 +12,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -37,12 +36,10 @@ public class Quiz {
     @Column(name = "type")
     String type;
 
-    @Lob
     @Convert(converter = ListStringToJsonConverter.class)
     @Column(name = "options_json", columnDefinition = "TEXT")
     List<String> options;
 
-    @Lob
     @Convert(converter = ListIntegerToJsonConverter.class)
     @Column(name = "answers_json", columnDefinition = "TEXT")
     List<Integer> answers;

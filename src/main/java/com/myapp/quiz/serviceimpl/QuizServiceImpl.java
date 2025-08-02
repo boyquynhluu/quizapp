@@ -1,9 +1,6 @@
 package com.myapp.quiz.serviceimpl;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
@@ -53,15 +50,7 @@ public class QuizServiceImpl implements QuizService {
         quiz.setOptions(objectMapper.readValue(optionsJson, new TypeReference<List<String>>() {}));
         quiz.setAnswers(objectMapper.readValue(answerJson, new TypeReference<List<Integer>>() {}));
 
-//        if (image != null && !image.isEmpty()) {
-//            Files.createDirectories(Paths.get(uploadDir));
-//            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-//            Files.copy(image.getInputStream(), Paths.get(uploadDir).resolve(fileName),
-//                    StandardCopyOption.REPLACE_EXISTING);
-//            quiz.setImageName(fileName);
-//        }
         if(image != null && !image.isEmpty()) {
-            String pathImage = this.uploadImage(image);
             quiz.setImageName(this.uploadImage(image));
         }
         quiz.setCreatedAt(LocalDateTime.now());
