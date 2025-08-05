@@ -21,9 +21,9 @@ spring:
 #    url: "jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
 #    username: ${MYSQLUSER}
 #    password: ${MYSQLPASSWORD}
-    url: "jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
-    username: ${PGUSER}
-    password: ${PGPASSWORD}
+    url: jdbc:postgresql://dpg-d255at7fte5s73d56jlg-a.singapore-postgres.render.com:5432/quizapp_db_miow
+    username: quizapp_db_miow_user
+    password: GN5IYndyM0KNd3iOkPYIlpg4NNuFYh59
 
 # ===== HIKARICP POOL CONFIG (Tùy chọn để tối ưu hiệu suất) =====
     hikari:
@@ -54,6 +54,14 @@ spring:
   h2:
     console:
       enabled: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: redis
+
 #Upload file
 file:
   upload-dir: uploads
