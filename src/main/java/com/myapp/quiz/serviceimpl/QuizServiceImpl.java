@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,6 +42,7 @@ public class QuizServiceImpl implements QuizService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    @CacheEvict(value = "quizList", allEntries = true)
     @Override
     public Quiz saveQuiz(String question, String type, String optionsJson, String answerJson, MultipartFile image)
             throws IOException {
@@ -58,6 +61,7 @@ public class QuizServiceImpl implements QuizService {
         return quizRepository.save(quiz);
     }
 
+    @Cacheable(value = "quizList")
     @Override
     public List<QuizResponse> getRandomQuizzes() {
         try {
